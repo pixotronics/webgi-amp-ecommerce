@@ -3473,9 +3473,9 @@ limitations under the License.
 
       <section class="flex flex-wrap pb4 md-pb7">
         <div class="col-12 md-col-8 px2 pt2 md-pl7 md-pt4">
-          <div id="loadingContainer">
-            <div id="loadingSpinner"></div>
-          </div>
+<!--          <div id="loadingContainer">-->
+<!--            <div id="loadingSpinner"></div>-->
+<!--          </div>-->
           <amp-carousel
             width="1280"
             height="720"
@@ -3484,9 +3484,12 @@ limitations under the License.
             id="carousel"
             [slide]="product.selectedSlide"
             on="slideChange: AMP.setState({product: {selectedSlide: event.index}})"
+            style="position: relative;"
           >
-            <canvas id="webgi-canvas" width="1280" height="720" tabindex="0">
+            <div style="width: 1280px; height: 720px; position: relative">
+            <canvas id="webgi-canvas" width="1280" height="720" tabindex="0" style="width: 100%; height: 100%; position: relative">
             </canvas>
+            </div>
 
             <amp-img
               [src]="product[product.selectedColor].large.image2"
@@ -3914,33 +3917,38 @@ limitations under the License.
         </div>
       </section>
 
-      <script src="https://dist.pixotronics.com/webgi/runtime/viewer-0.3.4.js"> </script>
+      <script src="https://dist.pixotronics.com/webgi/runtime/viewer-0.9.6.js"> </script>
       <script>
         window.setMetalColor = function(color){
           let v = window.viewer;
           if(!v) return;
           v.scene.modelRoot.traverse(function(m){
             if(m.material && m.material.isMeshStandardMaterial){
-              m.material.color.set(color).convertSRGBToLinear();
+              m.material.color.set(color)
+                      //.convertSRGBToLinear();
               m.material.userData.setDirty();
             }
             viewer.scene.setDirty()
           })
         }
         const canvas = document.getElementById("webgi-canvas");
-        setupCoreWebGiViewer({ canvas: canvas }, {}).then(
+        new CoreViewerApp({ canvas: canvas }).initialize({}).then(
                 (viewer) => {
                   // document.getElementById('loadingContainer').style.left = canvas.clientWidth / 2 + 50 + 'px'
                   // document.getElementById('loadingContainer').style.top = canvas.clientHeight / 2 + 50 + 'px'
                   window.viewer =  viewer;
                   const model =
                           "https://demo-assets.pixotronics.com/pixo/gltf/ijeweldemo2.glb";
-                  viewer.getManager().addFromPath(model).then(function(){
+                  viewer.load(model).then(function(){
                     viewer.scene.activeCamera.controls.enableDamping = true;
-                    viewer.scene.activeCamera.controls.rotateLeft(0.3);
-                    viewer.scene.activeCamera.controls.minDistance = 2;
-                    viewer.scene.activeCamera.controls.maxDistance = 7;
-                    document.getElementById('loadingContainer').style.visibility='hidden'
+                    // viewer.scene.activeCamera.controls.rotateLeft(0.3);
+                    viewer.scene.activeCamera.controls.minDistance = 5;
+                    viewer.scene.activeCamera.controls.maxDistance = 15;
+                    viewer.getPluginByType('InteractionPointerPlugin').enabled = false
+                    setTimeout(()=>viewer.fitToView(undefined, 1.2).then(()=>{
+                      viewer.getPluginByType('InteractionPointerPlugin').enabled = true
+                    }), 10)
+                    // document.getElementById('loadingContainer').style.visibility='hidden'
                   });
                   console.log(viewer);
                 }
